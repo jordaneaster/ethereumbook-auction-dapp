@@ -86,7 +86,7 @@ contract AuctionRepository {
     * @dev Gets an array of owned auctions
     * @param _owner address of the auction owner
     */
-    function getAuctionsOf(address _owner) public  returns(uint[]) {
+    function getAuctionsOf(address _owner) public  returns(uint[] memory) {
         uint[] memory ownedAuctions = auctionOwner[_owner];
         return ownedAuctions;
     }
@@ -99,11 +99,10 @@ contract AuctionRepository {
     function getCurrentBid(uint _auctionId) public  returns(uint256, address) {
         uint bidsLength = auctionBids[_auctionId].length;
         // if there are bids refund the last bid
-        if( bidsLength > 0 ) {
+      
             Bid memory lastBid = auctionBids[_auctionId][bidsLength - 1];
             return (lastBid.amount, lastBid.from);
-        }
-        return (0, 0);
+      
     }
 
     /**
@@ -115,24 +114,24 @@ contract AuctionRepository {
         return auctionOwner[_owner].length;
     }
 
-    /**
-    * @dev Gets the info of a given auction which are stored within a struct
-    * @param _auctionId uint ID of the auction
-    * @return string name of the auction
-    * @return uint256 timestamp of the auction in which it expires
-    * @return uint256 starting price of the auction
-    * @return string representing the metadata of the auction
-    * @return uint256 ID of the deed registered in DeedRepository
-    * @return address Address of the DeedRepository
-    * @return address owner of the auction
-    * @return bool whether the auction is active
-    * @return bool whether the auction is finalized
-    */
+    // /**
+    // * @dev Gets the info of a given auction which are stored within a struct
+    // * @param _auctionId uint ID of the auction
+    // * @return string name of the auction
+    // * @return uint256 timestamp of the auction in which it expires
+    // * @return uint256 starting price of the auction
+    // * @return string representing the metadata of the auction
+    // * @return uint256 ID of the deed registered in DeedRepository
+    // * @return address Address of the DeedRepository
+    // * @return address owner of the auction
+    // * @return bool whether the auction is active
+    // * @return bool whether the auction is finalized
+    // */
     function getAuctionById(uint _auctionId) public  returns(
-        string name,
+        string memory name,
         uint256 blockDeadline,
         uint256 startPrice,
-        string metadata,
+        string memory metadata,
         uint256 deedId,
         address deedRepositoryAddress,
         address owner,
@@ -162,7 +161,7 @@ contract AuctionRepository {
     * @param _blockDeadline uint is the timestamp in which the auction expires
     * @return bool whether the auction is created
     */
-    function createAuction(address _deedRepositoryAddress, uint256 _deedId, string _auctionTitle, string _metadata, uint256 _startPrice, uint _blockDeadline) public contractIsDeedOwner(_deedRepositoryAddress, _deedId) returns(bool) {
+    function createAuction(address _deedRepositoryAddress, uint256 _deedId, string memory _auctionTitle, string memory _metadata, uint256 _startPrice, uint _blockDeadline) public contractIsDeedOwner(_deedRepositoryAddress, _deedId) returns(bool) {
         uint auctionId = auctions.length;
         Auction memory newAuction;
         newAuction.name = _auctionTitle;
@@ -195,24 +194,24 @@ contract AuctionRepository {
     * @dev Bidder is refunded with the initial amount
     * @param _auctionId uint ID of the created auction
     */
-    function cancelAuction(uint _auctionId) public isOwner(_auctionId) {
-        Auction memory myAuction = auctions[_auctionId];
-        uint bidsLength = auctionBids[_auctionId].length;
+    // function cancelAuction(uint _auctionId) public isOwner(_auctionId) {
+    //     Auction memory myAuction = auctions[_auctionId];
+    //     uint bidsLength = auctionBids[_auctionId].length;
 
-        // if there are bids refund the last bid
-        if( bidsLength > 0 ) {
-            Bid memory lastBid = auctionBids[_auctionId][bidsLength - 1];
-            if(!lastBid.from.send(lastBid.amount)) {
-                revert();
-            }
-        }
+    //     // if there are bids refund the last bid
+    //     if( bidsLength > 0 && getAuctionById(); == payable()) {
+    //         Bid memory lastBid = auctionBids[_auctionId][bidsLength - 1];
+    //         if(!lastBid.from.send(lastBid.amount)) {
+    //             revert();
+    //         }
+    //     }
 
-        // approve and transfer from this contract to auction owner
-        if(approveAndTransfer(address(this), myAuction.owner, myAuction.deedRepositoryAddress, myAuction.deedId)){
-            auctions[_auctionId].active = false;
-            emit AuctionCanceled(msg.sender, _auctionId);
-        }
-    }
+    //     // approve and transfer from this contract to auction owner
+    //     if(approveAndTransfer(address(this), myAuction.owner, myAuction.deedRepositoryAddress, myAuction.deedId)){
+    //         auctions[_auctionId].active = false;
+    //         emit AuctionCanceled(msg.sender, _auctionId);
+    //     }
+    // }
 
     /**
     * @dev Finalized an ended auction
@@ -220,32 +219,32 @@ contract AuctionRepository {
     * @dev On success Deed is transfered to bidder and auction owner gets the amount
     * @param _auctionId uint ID of the created auction
     */
-    function finalizeAuction(uint _auctionId) public {
-        Auction memory myAuction = auctions[_auctionId];
-        uint bidsLength = auctionBids[_auctionId].length;
+    // function finalizeAuction(uint _auctionId) public {
+    //     Auction memory myAuction = auctions[_auctionId];
+    //     uint bidsLength = auctionBids[_auctionId].length;
 
-        // 1. if auction not ended just revert
-        if( block.timestamp < myAuction.blockDeadline ) revert();
+    //     // 1. if auction not ended just revert
+    //     if( block.timestamp < myAuction.blockDeadline ) revert();
         
-        // if there are no bids cancel
-        if(bidsLength == 0) {
-            cancelAuction(_auctionId);
-        }else{
+    //     // if there are no bids cancel
+    //     if(bidsLength == 0) {
+    //         // cancelAuction(_auctionId);
+    //     }else{
 
-            // 2. the money goes to the auction owner
-            Bid memory lastBid = auctionBids[_auctionId][bidsLength - 1];
-            if(!myAuction.owner.send(lastBid.amount)) {
-                revert();
-            }
+    //         // 2. the money goes to the auction owner
+    //         Bid memory lastBid = auctionBids[_auctionId][bidsLength - 1];
+    //         if(!myAuction.owner.send(lastBid.amount)) {
+    //             revert();
+    //         }
 
-            // approve and transfer from this contract to the bid winner 
-            if(approveAndTransfer(address(this), lastBid.from, myAuction.deedRepositoryAddress, myAuction.deedId)){
-                auctions[_auctionId].active = false;
-                auctions[_auctionId].finalized = true;
-                emit AuctionFinalized(msg.sender, _auctionId);
-            }
-        }
-    }
+    //         // approve and transfer from this contract to the bid winner 
+    //         if(approveAndTransfer(address(this), lastBid.from, myAuction.deedRepositoryAddress, myAuction.deedId)){
+    //             auctions[_auctionId].active = false;
+    //             auctions[_auctionId].finalized = true;
+    //             emit AuctionFinalized(msg.sender, _auctionId);
+    //         }
+    //     }
+    // }
 
     /**
     * @dev Bidder sends bid on an auction
@@ -277,11 +276,11 @@ contract AuctionRepository {
         if( ethAmountSent < tempAmount ) revert(); 
 
         // refund the last bidder
-        if( bidsLength > 0 ) {
-            if(!lastBid.from.send(lastBid.amount)) {
-                revert();
-            }  
-        }
+        // if( bidsLength > 0 ) {
+        //     if(!lastBid.from.send(lastBid.amount)) {
+        //         revert();
+        //     }  
+        // }
 
         // insert bid 
         Bid memory newBid;
