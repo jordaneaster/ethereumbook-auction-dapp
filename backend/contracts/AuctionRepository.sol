@@ -1,4 +1,6 @@
-pragma solidity ^0.4.17;
+// SPDX-License-Identifier: UNLICENSED
+
+pragma solidity ^0.8.0;
 
 import "./DeedRepository.sol";
 
@@ -60,15 +62,15 @@ contract AuctionRepository {
     /**
     * @dev Disallow payments to this contract directly
     */
-    function() public{
-        revert();
-    }
+    // function() public {
+    //     revert();
+    // }
 
     /**
     * @dev Gets the length of auctions
     * @return uint representing the auction count
     */
-    function getCount() public constant returns(uint) {
+    function getCount() public returns(uint) {
         return auctions.length;
     }
 
@@ -76,7 +78,7 @@ contract AuctionRepository {
     * @dev Gets the bid counts of a given auction
     * @param _auctionId uint ID of the auction
     */
-    function getBidsCount(uint _auctionId) public constant returns(uint) {
+    function getBidsCount(uint _auctionId) public  returns(uint) {
         return auctionBids[_auctionId].length;
     }
 
@@ -84,7 +86,7 @@ contract AuctionRepository {
     * @dev Gets an array of owned auctions
     * @param _owner address of the auction owner
     */
-    function getAuctionsOf(address _owner) public constant returns(uint[]) {
+    function getAuctionsOf(address _owner) public  returns(uint[]) {
         uint[] memory ownedAuctions = auctionOwner[_owner];
         return ownedAuctions;
     }
@@ -94,7 +96,7 @@ contract AuctionRepository {
     * @param _auctionId uint of the auction owner
     * @return amount uint256, address of last bidder
     */
-    function getCurrentBid(uint _auctionId) public constant returns(uint256, address) {
+    function getCurrentBid(uint _auctionId) public  returns(uint256, address) {
         uint bidsLength = auctionBids[_auctionId].length;
         // if there are bids refund the last bid
         if( bidsLength > 0 ) {
@@ -109,7 +111,7 @@ contract AuctionRepository {
     * @param _owner address of the owner
     * @return uint total number of auctions
     */
-    function getAuctionsCountOfOwner(address _owner) public constant returns(uint) {
+    function getAuctionsCountOfOwner(address _owner) public  returns(uint) {
         return auctionOwner[_owner].length;
     }
 
@@ -126,7 +128,7 @@ contract AuctionRepository {
     * @return bool whether the auction is active
     * @return bool whether the auction is finalized
     */
-    function getAuctionById(uint _auctionId) public constant returns(
+    function getAuctionById(uint _auctionId) public  returns(
         string name,
         uint256 blockDeadline,
         uint256 startPrice,

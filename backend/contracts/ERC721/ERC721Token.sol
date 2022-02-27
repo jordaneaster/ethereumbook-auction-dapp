@@ -1,4 +1,6 @@
-pragma solidity ^0.4.18;
+// SPDX-License-Identifier: UNLICENSED
+
+pragma solidity ^0.8.0;
 
 import "./ERC721.sol";
 import "./DeprecatedERC721.sol";
